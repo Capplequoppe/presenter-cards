@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Deck } from "../../../domain";
 import { useUseCases } from "../../composition-root";
 
@@ -20,6 +20,27 @@ export function DeckActionsMenu({
 	const [open, setOpen] = useState(false);
 	const [renameError, setRenameError] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	// Close the dropdown when the user taps anywhere outside it (phone UX:
+	// prevents multiple open menus and stale dropdowns lingering on screen).
+	useEffect(() => {
+		if (!open) return;
+		function handleOutsidePointerDown(e: PointerEvent): void {
+			const container = containerRef.current;
+			if (
+				container &&
+				e.target instanceof Node &&
+				!container.contains(e.target)
+			) {
+				setOpen(false);
+				setRenameError(null);
+			}
+		}
+		document.addEventListener("pointerdown", handleOutsidePointerDown);
+		return () =>
+			document.removeEventListener("pointerdown", handleOutsidePointerDown);
+	}, [open]);
 
 	function toggleMenu(): void {
 		setOpen((prev) => !prev);
@@ -85,7 +106,7 @@ export function DeckActionsMenu({
 	}
 
 	return (
-		<div className="relative">
+		<div ref={containerRef} className="relative">
 			<button
 				type="button"
 				aria-label={`Actions for ${deck.name}`}

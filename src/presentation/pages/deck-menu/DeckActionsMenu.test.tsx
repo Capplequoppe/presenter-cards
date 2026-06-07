@@ -53,6 +53,24 @@ describe("DeckActionsMenu", () => {
 		vi.restoreAllMocks();
 	});
 
+	describe("menu open/close", () => {
+		it("tapping outside the open menu closes it", async () => {
+			const user = userEvent.setup();
+
+			renderWithUseCases(<DeckMenuPage />, { repository: repo });
+			await openActionsMenu(user);
+			expect(screen.getByText("Rename")).toBeInTheDocument();
+
+			await user.click(
+				screen.getByRole("heading", { name: "Presenter Cards" }),
+			);
+
+			await waitFor(() =>
+				expect(screen.queryByText("Rename")).not.toBeInTheDocument(),
+			);
+		});
+	});
+
 	describe("Rename", () => {
 		it("happy path: updates the deck name in the list", async () => {
 			const user = userEvent.setup();
