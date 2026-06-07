@@ -1,3 +1,16 @@
+export type { CreateDeckProps, Deck } from "./deck";
+export {
+	createDeck,
+	reImportDeck,
+	renameDeck,
+	updateDeckSettings,
+} from "./deck";
+export type { DeckSettings, Layout } from "./deck-settings";
+export {
+	createDefaultDeckSettings,
+	inferLayout,
+	updateFontScale,
+} from "./deck-settings";
 export {
 	EmptyDeckError,
 	InvalidDeckNameError,
