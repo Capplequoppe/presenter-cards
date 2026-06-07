@@ -35,4 +35,25 @@ test on a real phone throughout development.
 Quality gates (lint, tests, build) enforced in CI keep every later phase
 honest about its acceptance criteria.
 
-## Status: Pending
+## Status: Complete
+
+### Summary
+
+- Created `.github/workflows/deploy.yml` with a `quality` job (checkout, pnpm
+  setup via pnpm/action-setup@v4 + actions/setup-node@v4 with Node 22 and pnpm
+  cache, frozen install, `pnpm check`, `pnpm test`, `pnpm build`,
+  `actions/upload-pages-artifact@v3`) and a `deploy` job (needs quality,
+  github-pages environment, `actions/deploy-pages@v4`). Concurrency group
+  `pages` with `cancel-in-progress: false`.
+- Added `"packageManager": "pnpm@9.12.2"` to `package.json` so corepack/CI
+  resolves the exact pnpm version.
+- Added `.npmrc` with `auto-install-peers=false` to match the lockfile setting
+  and prevent a `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH` on CI.
+- Created public repository `Capplequoppe/presenter-cards` via `gh repo create`
+  and pushed `main`.
+- Enabled Pages with `build_type=workflow` via `gh api POST
+  repos/Capplequoppe/presenter-cards/pages`.
+- Workflow run 27097477112 completed green (quality 22 s, deploy 10 s).
+- Live site `https://capplequoppe.github.io/presenter-cards/` returns HTTP 200
+  with `<title>Presenter Cards</title>`.
+- Commits: `3901c4c` (workflow + packageManager), `69e5515` (.npmrc fix).
