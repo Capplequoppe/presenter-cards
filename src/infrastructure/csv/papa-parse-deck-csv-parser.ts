@@ -166,7 +166,6 @@ function buildSlides(
 
 		const durationResult = parseDuration(
 			getRawField(row, columnMap, "duration_minutes"),
-			rowNumber,
 		);
 
 		if (durationResult.kind === "invalid") {
@@ -214,13 +213,6 @@ function buildSlides(
 		);
 	}
 
-	if (slides.length === 0) {
-		throw new CsvParseError(
-			"No slides found. The CSV has a header row but no data rows.",
-			CsvParseErrorKind.MissingHeader,
-		);
-	}
-
 	return slides;
 }
 
@@ -235,7 +227,7 @@ type DurationResult =
  * - Valid number string → number
  * - Anything else → invalid
  */
-function parseDuration(raw: string, _rowNumber: number): DurationResult {
+function parseDuration(raw: string): DurationResult {
 	if (raw.trim() === "") {
 		return { kind: "absent", value: undefined };
 	}
