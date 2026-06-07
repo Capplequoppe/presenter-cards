@@ -270,6 +270,66 @@ describe("useGestures", () => {
 			expect(goNext).not.toHaveBeenCalled();
 			expect(goPrevious).not.toHaveBeenCalled();
 		});
+
+		it("ignores pointerdown on descendants of interactive elements", () => {
+			const { result } = renderHook(() =>
+				useGestures({ goNext, goPrevious, toggleLanguage }),
+			);
+
+			const btn = document.createElement("button");
+			const span = document.createElement("span");
+			btn.appendChild(span);
+			Object.defineProperty(btn, "offsetWidth", { value: 400 });
+
+			act(() => {
+				const downEvent = new PointerEvent("pointerdown", {
+					clientX: 200,
+					clientY: 100,
+					bubbles: true,
+					cancelable: true,
+				});
+				Object.defineProperty(downEvent, "target", { value: span });
+				result.current.onPointerDown(downEvent, btn);
+
+				const upEvent = makePointerUp(200, 100);
+				result.current.onPointerUp(upEvent);
+			});
+
+			expect(toggleLanguage).not.toHaveBeenCalled();
+			expect(goNext).not.toHaveBeenCalled();
+			expect(goPrevious).not.toHaveBeenCalled();
+		});
+
+		it("ignores pointerdown inside an element marked data-gesture-ignore", () => {
+			const { result } = renderHook(() =>
+				useGestures({ goNext, goPrevious, toggleLanguage }),
+			);
+
+			const container = document.createElement("div");
+			Object.defineProperty(container, "offsetWidth", { value: 400 });
+			const overlay = document.createElement("div");
+			overlay.setAttribute("data-gesture-ignore", "");
+			container.appendChild(overlay);
+
+			act(() => {
+				// Tap landing on the overlay itself (e.g. gap between its buttons)
+				const downEvent = new PointerEvent("pointerdown", {
+					clientX: 360, // right-edge zone — would otherwise be goNext
+					clientY: 100,
+					bubbles: true,
+					cancelable: true,
+				});
+				Object.defineProperty(downEvent, "target", { value: overlay });
+				result.current.onPointerDown(downEvent, container);
+
+				const upEvent = makePointerUp(360, 100);
+				result.current.onPointerUp(upEvent);
+			});
+
+			expect(goNext).not.toHaveBeenCalled();
+			expect(goPrevious).not.toHaveBeenCalled();
+			expect(toggleLanguage).not.toHaveBeenCalled();
+		});
 	});
 
 	// -------------------------------------------------------------------------

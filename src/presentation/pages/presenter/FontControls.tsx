@@ -74,6 +74,7 @@ export function FontControls({
 		<div
 			className={`flex items-center gap-2 transition-opacity duration-500 ${visible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
 			data-testid="font-controls"
+			data-gesture-ignore=""
 			onClick={stopPropagation}
 			onPointerMove={keepVisible}
 		>

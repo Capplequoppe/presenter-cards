@@ -55,8 +55,9 @@ interface PointerState {
  * - Tap in right 20% zone → goNext
  * - Tap in center 60%     → toggleLanguage
  *
- * Events targeting button elements are ignored to preserve exit ✕ and
- * sr-only nav button functionality.
+ * Events originating within interactive elements (or any element marked
+ * with the data-gesture-ignore attribute, e.g. the font-controls overlay)
+ * are ignored to preserve exit ✕, sr-only nav buttons, and overlay controls.
  *
  * Call preventDefault on pointerdown to suppress scroll / zoom within the
  * presenter area (complements CSS touch-action: none on the container).
@@ -136,13 +137,16 @@ export function useGestures(callbacks: GestureCallbacks): GestureHandlers {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Elements whose pointer events must never be interpreted as gestures:
+ * interactive controls plus anything explicitly opted out via the
+ * data-gesture-ignore attribute (e.g. the font-controls overlay, whose
+ * wrapper would otherwise leak taps between its buttons into the
+ * right-edge navigation zone).
+ */
+const GESTURE_IGNORED_SELECTOR =
+	"button, a, input, select, textarea, [data-gesture-ignore]";
+
 function isInteractiveElement(el: Element): boolean {
-	const tag = el.tagName.toLowerCase();
-	return (
-		tag === "button" ||
-		tag === "a" ||
-		tag === "input" ||
-		tag === "select" ||
-		tag === "textarea"
-	);
+	return el.closest(GESTURE_IGNORED_SELECTOR) !== null;
 }

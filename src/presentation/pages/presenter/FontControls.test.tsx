@@ -334,5 +334,39 @@ describe("FontControls", () => {
 			expect(screen.getByText("Hello world")).toBeInTheDocument();
 			expect(screen.queryByText("Second slide")).not.toBeInTheDocument();
 		});
+
+		it("tapping the controls wrapper (between the buttons) does not navigate", async () => {
+			const slide2 = createSlide({ textEn: "Second slide" });
+			const repo = new FakeDeckRepository();
+			const deck = reconstituteDeck({
+				id: "deck-2",
+				name: "Two Slides",
+				slides: [slide, slide2],
+				importedAt: 1000,
+				settings: { layout: "text-only", fontScale: 1.0 },
+			});
+			await repo.save(deck);
+			const getDeck = new GetDeck(repo);
+
+			const { container } = renderWithUseCases(
+				<PresenterPage deckId="deck-2" />,
+				{ useCases: { getDeck } },
+			);
+
+			await screen.findByText("Hello world");
+
+			// The controls sit bottom-right — inside the right-edge tap zone.
+			const root = container.firstChild as HTMLElement;
+			Object.defineProperty(root, "offsetWidth", { value: 1000 });
+			const controls = screen.getByTestId("font-controls");
+
+			// Pointer tap on the wrapper itself (e.g. the gap between A− and A+)
+			fireEvent.pointerDown(controls, { clientX: 950, clientY: 500 });
+			fireEvent.pointerUp(controls, { clientX: 950, clientY: 500 });
+
+			// Must not be interpreted as a right-edge tap
+			expect(screen.getByText("Hello world")).toBeInTheDocument();
+			expect(screen.queryByText("Second slide")).not.toBeInTheDocument();
+		});
 	});
 });
