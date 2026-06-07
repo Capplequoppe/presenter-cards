@@ -178,6 +178,33 @@ describe("DeckMenuPage", () => {
 			expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 		});
 
+		it("shows the empty-file parser error verbatim and leaves the list unchanged", async () => {
+			const user = userEvent.setup();
+			const errorMessage = "The file is empty. Nothing to import.";
+			const csvParser = FakeDeckCsvParser.withFailure(
+				new CsvParseError(errorMessage, CsvParseErrorKind.EmptyFile),
+			);
+
+			renderWithUseCases(<DeckMenuPage />, { csvParser });
+
+			await screen.findByText(/No decks yet/i);
+
+			const importBtn = screen.getAllByRole("button", {
+				name: /import csv/i,
+			})[0];
+			await user.click(importBtn);
+
+			const fileInput =
+				document.querySelector<HTMLInputElement>('input[type="file"]');
+			await userEvent.upload(
+				fileInput as HTMLInputElement,
+				new File([""], "empty.csv"),
+			);
+
+			await screen.findByText(errorMessage);
+			expect(screen.getByText(/No decks yet/i)).toBeInTheDocument();
+		});
+
 		it("shows a dismissible error message when repository save fails", async () => {
 			const user = userEvent.setup();
 			const repo = new FakeDeckRepository();
