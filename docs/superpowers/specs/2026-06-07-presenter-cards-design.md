@@ -43,8 +43,13 @@ Italian (B1) — so slides carry near-verbatim scripts in both languages.
 
 | Field       | Type                                       | Notes                                                        |
 | ----------- | ------------------------------------------ | ------------------------------------------------------------ |
-| `layout`    | `'text-only' \| 'title-text' \| 'full'`    | Default inferred at import from which columns the CSV contains |
-| `fontScale` | number                                     | Persisted per deck; adjusted via A−/A+ on presenter screen   |
+| `layout`    | `'text-only' \| 'title-text' \| 'full'`    | Default inferred at import (rule below) |
+| `fontScale` | number                                     | Range 0.5–2.0 in 0.1 steps, default 1.0; persisted per deck; adjusted via A−/A+ on presenter screen |
+
+Layout inference at import: any slide has `notes`, `durationMinutes`, or
+`speaker` → `full`; else any slide has `title` → `title-text`; else
+`text-only`. The user can change the layout later via deck settings
+(`UpdateDeckSettings`).
 
 ### Language
 
@@ -75,7 +80,8 @@ Dark theme throughout (discreet at evening events).
 
 ### Deck menu
 
-- List of imported decks: name, slide count, import date.
+- List of imported decks: name, slide count, import date; ordered most
+  recently imported first.
 - `+ Import CSV` button → native file picker.
 - Per-deck `⋮` menu: **Rename / Re-import / Delete** (delete asks for
   confirmation; re-import replaces slides, keeps id and settings).
