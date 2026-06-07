@@ -105,6 +105,11 @@ Dark theme throughout (discreet at evening events).
     persisted to deck settings.
 - **Screen wake-lock** active while presenting (graceful no-op when the Wake
   Lock API is unsupported).
+- **Shrink-to-fit** (added post-launch): slides render at the user's chosen
+  font scale and automatically shrink — down to a 30% readability floor —
+  only when the content would overflow the screen. Short slides keep the
+  base size; the fit re-computes per slide, language toggle, font change,
+  and rotation/resize.
 
 ## Architecture
 

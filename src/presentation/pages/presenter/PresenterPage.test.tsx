@@ -247,6 +247,49 @@ describe("PresenterPage", () => {
 		});
 	});
 
+	describe("shrink-to-fit", () => {
+		it("renders at the base size when content fits", async () => {
+			// jsdom default: scrollHeight/clientHeight are 0 → no overflow.
+			const repo = new FakeDeckRepository();
+			await repo.save(textOnlyDeck);
+			const getDeck = new GetDeck(repo);
+
+			renderWithUseCases(<PresenterPage deckId="text-only-id" />, {
+				useCases: { getDeck },
+			});
+
+			const paragraph = await screen.findByText("Welcome everyone!");
+			expect(paragraph.style.fontSize).toBe("3rem");
+		});
+
+		it("shrinks overflowing slide text below the base size", async () => {
+			const scrollSpy = vi
+				.spyOn(HTMLElement.prototype, "scrollHeight", "get")
+				.mockReturnValue(800);
+			const clientSpy = vi
+				.spyOn(HTMLElement.prototype, "clientHeight", "get")
+				.mockReturnValue(400);
+			try {
+				const repo = new FakeDeckRepository();
+				await repo.save(textOnlyDeck);
+				const getDeck = new GetDeck(repo);
+
+				renderWithUseCases(<PresenterPage deckId="text-only-id" />, {
+					useCases: { getDeck },
+				});
+
+				const paragraph = await screen.findByText("Welcome everyone!");
+				const renderedRem = Number.parseFloat(paragraph.style.fontSize);
+				expect(renderedRem).toBeLessThan(3);
+				// Readability floor: 0.3 * 3rem = 0.9rem minimum.
+				expect(renderedRem).toBeGreaterThanOrEqual(0.9);
+			} finally {
+				scrollSpy.mockRestore();
+				clientSpy.mockRestore();
+			}
+		});
+	});
+
 	describe("layout: text-only", () => {
 		it("shows slide text without title", async () => {
 			const repo = new FakeDeckRepository();

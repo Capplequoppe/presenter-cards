@@ -5,6 +5,7 @@ import { useServices, useUseCases } from "../../composition-root";
 import { navigateToMenu } from "../../routing";
 import { FontControls } from "./FontControls";
 import { useFadingVisibility } from "./use-fading-visibility";
+import { useFitToScreen } from "./use-fit-to-screen";
 import { useGestures } from "./use-gestures";
 import { usePresenter } from "./use-presenter";
 import { useWakeLock } from "./use-wake-lock";
@@ -58,8 +59,17 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 
 	// Local settings state for immediate font scale feedback; persisted via FontControls
 	const [settings, setSettings] = useState<DeckSettings>(deck.settings);
+
+	// Shrink-to-fit: the user's A−/A+ scale is the base; long slides shrink
+	// just enough to fit the content area, short slides keep the base size.
+	const contentRef = useRef<HTMLElement>(null);
+	const fitFactor = useFitToScreen(
+		contentRef,
+		`${currentIndex}:${language}:${settings.fontScale}`,
+	);
+	const effectiveScale = settings.fontScale * fitFactor;
 	const fontScaleStyle = {
-		fontSize: `${Math.round(settings.fontScale * 3 * 10) / 10}rem`,
+		fontSize: `${Math.round(effectiveScale * 3 * 100) / 100}rem`,
 	};
 
 	// Font-controls visibility lives here: while faded the controls have
@@ -135,8 +145,11 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 				</span>
 			</div>
 
-			{/* Slide content — centered */}
-			<main className="flex-1 flex flex-col items-center justify-center px-8 text-center min-h-0">
+			{/* Slide content — centered; measured by useFitToScreen */}
+			<main
+				ref={contentRef}
+				className="flex-1 flex flex-col items-center justify-center px-8 text-center min-h-0 overflow-hidden"
+			>
 				{/* Title — shown in title-text and full layouts */}
 				{(layout === "title-text" || layout === "full") &&
 				currentSlide.title !== undefined ? (
@@ -144,7 +157,7 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 						data-testid="slide-title"
 						className="text-gray-300 mb-4"
 						style={{
-							fontSize: `${Math.round(settings.fontScale * 1.5 * 10) / 10}rem`,
+							fontSize: `${Math.round(effectiveScale * 1.5 * 100) / 100}rem`,
 						}}
 					>
 						{currentSlide.title}
