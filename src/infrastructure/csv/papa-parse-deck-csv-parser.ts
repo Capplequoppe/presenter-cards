@@ -1,5 +1,8 @@
 import Papa from "papaparse";
-import type { ParsedDeckData } from "../../application/ports/deck-csv-parser";
+import type {
+	DeckCsvParser,
+	ParsedDeckData,
+} from "../../application/ports/deck-csv-parser";
 import {
 	CsvParseError,
 	CsvParseErrorKind,
@@ -30,7 +33,7 @@ type RecognizedColumn = (typeof RECOGNIZED_COLUMNS)[number];
  * All validation failures produce a typed CsvParseError with a
  * human-readable message suitable for direct display.
  */
-export class PapaParseDeckCsvParser {
+export class PapaParseDeckCsvParser implements DeckCsvParser {
 	async parse(csvText: string, fallbackName: string): Promise<ParsedDeckData> {
 		const trimmed = stripBom(csvText);
 
