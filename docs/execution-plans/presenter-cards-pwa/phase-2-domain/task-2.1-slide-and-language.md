@@ -34,4 +34,17 @@ Invariants live with the data (DDD value object); the rule "English text is
 required" exists in exactly one place. Zero dependencies keep the domain at
 the center of the dependency graph.
 
-## Status: Pending
+## Architectural Decision
+
+Non-bilingual `'it'` text lookup returns `null` (not `undefined`) so callers
+get an explicit signal rather than an accidental `undefined` leaking to the UI.
+Whitespace-only `textIt` is treated as absent (isBilingual = false) because a
+blank Italian field in a CSV row is effectively the same as no field.
+
+## Status: Complete
+
+Implemented `src/domain/language.ts` (`Language` type + `toggleLanguage`),
+`src/domain/slide.ts` (`Slide` interface + `createSlide` + `getSlideText`),
+and `src/domain/errors.ts` (`InvalidSlideError` with optional `row` context,
+`EmptyDeckError`, `InvalidDeckNameError`). All 14 tests pass, `pnpm check`
+and `pnpm build` pass cleanly.

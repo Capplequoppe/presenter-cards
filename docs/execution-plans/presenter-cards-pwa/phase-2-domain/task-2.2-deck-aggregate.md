@@ -43,4 +43,24 @@ aggregate.
 Aggregate root guards all deck invariants (DDD); timestamp injection keeps
 the domain pure and deterministic (testability, DIP for time).
 
-## Status: Pending
+## Architectural Decision (additional — id and timestamp injection)
+
+The domain accepts `id` and `importedAt` as caller-supplied parameters rather
+than calling `crypto.randomUUID()` or `Date.now()` internally. This keeps the
+domain pure and deterministic: callers (application use cases) supply an
+id-generating function and the current timestamp, which makes tests trivial
+(no mocking of global time or crypto) and satisfies DIP for time.
+
+`fontScale` out-of-range values are **clamped** (not rejected) because the
+presenter's A−/A+ buttons step incrementally; clamping is safer than throwing
+when the caller accidentally requests 0.4 — it silently snaps to 0.5 instead
+of crashing, which is the right UX for font controls.
+
+## Status: Complete
+
+Implemented `src/domain/deck-settings.ts` (`DeckSettings` interface,
+`Layout` type, `inferLayout`, `createDefaultDeckSettings`, `updateFontScale`
+with [0.5, 2.0] clamping) and `src/domain/deck.ts` (`Deck` interface,
+`createDeck` with layout inference, `renameDeck`, `updateDeckSettings`,
+`reImportDeck` preserving settings). All 43 tests pass, `pnpm check` and
+`pnpm build` pass cleanly.
