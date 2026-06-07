@@ -38,4 +38,17 @@ Page is a thin orchestrator over `ListDecks`/`ImportDeck`; error-message
 content comes from typed errors produced where the knowledge lives, the page
 only renders them.
 
-## Status: Pending
+## Status: Complete
+
+Implemented DeckMenuPage with full deck list, import flow, and error handling:
+- Empty state when no decks stored with prompt to import
+- Deck list ordered newest-first with name, slide count ("N slide(s)"), and localized import date
+- Import CSV button (header) + hidden file input (accept .csv,text/csv); successful import adds deck immediately
+- Deck name derived from file name sans extension via ImportDeck use case
+- CsvParseError messages displayed verbatim in a dismissible ErrorBanner
+- StorageError shown as dismissible ErrorBanner, list unchanged
+- Tapping a deck row navigates to #/deck/:id presenter route
+
+Sub-components: ErrorBanner, ImportButton, DeckActionsMenu (stub fleshed out in 5.3).
+renderWithUseCases test helper extended with `csvParser` and `repository` options.
+8 component tests (DeckMenuPage.test.tsx). All 173 tests pass.

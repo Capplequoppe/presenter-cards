@@ -20,17 +20,29 @@ import { type UseCases, UseCasesProvider } from "./use-cases-context";
 export interface RenderWithUseCasesOptions {
 	/** Override specific use cases. When omitted, fakes are used. */
 	readonly useCases?: Partial<UseCases>;
+	/**
+	 * Provide a pre-configured FakeDeckCsvParser. When omitted, a parser that
+	 * succeeds with an empty slide list is used. This parser is wired into
+	 * ImportDeck and ReimportDeck unless those use cases are overridden.
+	 */
+	readonly csvParser?: FakeDeckCsvParser;
+	/**
+	 * Provide a pre-seeded FakeDeckRepository. When omitted, an empty repository
+	 * is created. This repository is wired into all use cases unless those use
+	 * cases are overridden.
+	 */
+	readonly repository?: FakeDeckRepository;
 }
 
 /**
  * Builds a default set of use cases backed by in-memory fakes.
  */
-export function createFakeUseCases(overrides?: Partial<UseCases>): {
+export function createFakeUseCases(options: RenderWithUseCasesOptions = {}): {
 	useCases: UseCases;
 	repository: FakeDeckRepository;
 } {
-	const repository = new FakeDeckRepository();
-	const csvParser = FakeDeckCsvParser.withSuccess([]);
+	const repository = options.repository ?? new FakeDeckRepository();
+	const csvParser = options.csvParser ?? FakeDeckCsvParser.withSuccess([]);
 	const idGenerator = () => "test-id";
 	const clock = () => 0;
 
@@ -44,7 +56,7 @@ export function createFakeUseCases(overrides?: Partial<UseCases>): {
 	};
 
 	return {
-		useCases: { ...defaults, ...overrides },
+		useCases: { ...defaults, ...(options.useCases ?? {}) },
 		repository,
 	};
 }
@@ -53,12 +65,12 @@ export function createFakeUseCases(overrides?: Partial<UseCases>): {
  * Test helper: renders any subtree with fake-backed use cases.
  *
  * Usage:
- *   const { getByText } = renderWithUseCases(<MyComponent />, { useCases: { importDeck: myFake } })
+ *   const { getByText } = renderWithUseCases(<MyComponent />, { repository: myRepo })
  */
 export function renderWithUseCases(
 	ui: ReactElement,
 	options: RenderWithUseCasesOptions = {},
 ) {
-	const { useCases } = createFakeUseCases(options.useCases);
+	const { useCases } = createFakeUseCases(options);
 	return render(<UseCasesProvider useCases={useCases}>{ui}</UseCasesProvider>);
 }
