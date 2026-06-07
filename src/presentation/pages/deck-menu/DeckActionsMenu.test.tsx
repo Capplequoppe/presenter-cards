@@ -56,7 +56,9 @@ describe("DeckActionsMenu", () => {
 	describe("Rename", () => {
 		it("happy path: updates the deck name in the list", async () => {
 			const user = userEvent.setup();
-			vi.spyOn(window, "prompt").mockReturnValue("Renamed Deck");
+			const promptSpy = vi
+				.spyOn(window, "prompt")
+				.mockReturnValue("Renamed Deck");
 
 			renderWithUseCases(<DeckMenuPage />, { repository: repo });
 			await openActionsMenu(user);
@@ -64,6 +66,8 @@ describe("DeckActionsMenu", () => {
 
 			await screen.findByText("Renamed Deck");
 			expect(screen.queryByText("Test Deck")).not.toBeInTheDocument();
+			// The prompt must be pre-filled with the current deck name
+			expect(promptSpy).toHaveBeenCalledWith(expect.any(String), "Test Deck");
 		});
 
 		it("cancelling prompt leaves deck unchanged", async () => {
@@ -187,7 +191,7 @@ describe("DeckActionsMenu", () => {
 	describe("Delete", () => {
 		it("confirming delete removes the deck row", async () => {
 			const user = userEvent.setup();
-			vi.spyOn(window, "confirm").mockReturnValue(true);
+			const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
 			renderWithUseCases(<DeckMenuPage />, { repository: repo });
 			await openActionsMenu(user);
@@ -197,6 +201,10 @@ describe("DeckActionsMenu", () => {
 				expect(screen.queryByText("Test Deck")).not.toBeInTheDocument(),
 			);
 			expect(screen.getByText(/No decks yet/i)).toBeInTheDocument();
+			// The confirmation must name the deck being deleted
+			expect(confirmSpy).toHaveBeenCalledWith(
+				expect.stringContaining("Test Deck"),
+			);
 		});
 
 		it("cancelling the confirmation leaves the deck row", async () => {
