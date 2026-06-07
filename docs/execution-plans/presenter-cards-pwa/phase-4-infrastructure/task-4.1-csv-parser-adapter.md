@@ -43,4 +43,35 @@ Adapter pattern: PapaParse is invisible above this module; swapping CSV
 libraries touches one file. Validation messages are produced where the
 knowledge lives, typed errors carry them outward.
 
-## Status: Pending
+## Architectural Decision
+
+`CsvParseErrorKind` was extended with `InvalidDuration = "InvalidDuration"` to
+cover non-numeric `duration_minutes` values. The existing kinds (`EmptyFile`,
+`MissingHeader`, `UnrecognizedHeader`, `EmptyTextEn`) did not represent this
+failure category. The new kind follows the same pattern: it carries `rows`
+(1-based row numbers of offending cells) so the presentation layer can
+surface precise, row-keyed feedback without string-matching.
+
+The `CsvParseErrorDetails.rows` field now documents that it is used by both
+`EmptyTextEn` and `InvalidDuration`.
+
+`FakeDeckCsvParser` was not changed — the enum addition is backward-compatible.
+
+## Status: Complete
+
+Implemented `PapaParseDeckCsvParser` in
+`src/infrastructure/csv/papa-parse-deck-csv-parser.ts`.
+
+- Full TDD: 34 tests covering all 10 test-case groups from the task file;
+  all 125 project tests pass.
+- `CsvParseErrorKind` extended with `InvalidDuration` (see Architectural
+  Decision above).
+- `src/infrastructure/.gitkeep` removed; `src/infrastructure/csv/` created.
+- Key design choices:
+  - `skipEmptyLines: false` so row numbers are preserved; trailing blank rows
+    (all cells `""`) stripped before processing so they do not count as errors.
+  - Validation is all-or-nothing: `emptyTextEnRows` and `invalidDurationRows`
+    are accumulated across all rows and a single `CsvParseError` is thrown.
+  - BOM stripped manually before passing to PapaParse.
+  - Case-insensitive header mapping via a `Map<RecognizedColumn, actualHeader>`.
+- `pnpm check`, `pnpm test`, and `pnpm build` all pass.
