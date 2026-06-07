@@ -12,11 +12,17 @@ export enum CsvParseErrorKind {
 	UnrecognizedHeader = "UnrecognizedHeader",
 	/** One or more data rows have an empty `text_en` value. */
 	EmptyTextEn = "EmptyTextEn",
+	/** One or more data rows have a non-numeric value in `duration_minutes`. */
+	InvalidDuration = "InvalidDuration",
 }
 
 /** Extra details carried by certain error kinds. */
 export interface CsvParseErrorDetails {
-	/** Row numbers (1-based) with empty `text_en` — present when kind is EmptyTextEn. */
+	/**
+	 * Row numbers (1-based) relevant to the error.
+	 * Present when kind is EmptyTextEn (rows with empty text_en) or
+	 * InvalidDuration (rows with non-numeric duration_minutes).
+	 */
 	readonly rows?: number[];
 }
 
