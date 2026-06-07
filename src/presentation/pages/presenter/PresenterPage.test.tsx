@@ -109,6 +109,24 @@ describe("PresenterPage", () => {
 		});
 	});
 
+	describe("storage failure", () => {
+		it("redirects to the menu instead of staying on a blank screen", async () => {
+			const repo = new FakeDeckRepository();
+			vi.spyOn(repo, "findById").mockRejectedValue(
+				new Error("IndexedDB unavailable"),
+			);
+			const getDeck = new GetDeck(repo);
+
+			renderWithUseCases(<PresenterPage deckId="any-id" />, {
+				useCases: { getDeck },
+			});
+
+			await vi.waitFor(() => {
+				expect(window.location.hash).toBe("#/");
+			});
+		});
+	});
+
 	describe("exit control", () => {
 		it("clicking the exit button navigates to the menu", async () => {
 			const user = userEvent.setup();

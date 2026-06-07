@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DeckNotFoundError } from "../../../application/ports/deck-repository";
 import type { Deck, DeckSettings } from "../../../domain";
 import { getSlideText } from "../../../domain";
 import { useServices, useUseCases } from "../../composition-root";
@@ -29,10 +28,10 @@ export function PresenterPage({ deckId }: PresenterPageProps) {
 		getDeck
 			.execute(deckId)
 			.then(setDeck)
-			.catch((err: unknown) => {
-				if (err instanceof DeckNotFoundError) {
-					navigateToMenu();
-				}
+			.catch(() => {
+				// Unknown id or storage failure: never leave a blank screen —
+				// the deck menu surfaces storage errors via its error banner.
+				navigateToMenu();
 			});
 	}, [getDeck, deckId]);
 
