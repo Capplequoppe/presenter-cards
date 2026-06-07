@@ -1,0 +1,47 @@
+# Presenter Cards
+
+A PWA for toastmasters: bilingual (EN/IT) prompt cards on a phone held
+horizontally, imported from local CSV files, fully offline.
+
+Live at `https://capplequoppe.github.io/presenter-cards/`
+
+## Architecture
+
+Clean Architecture / DDD with four layers under `src/`. **Dependencies point
+inward only:**
+
+```
+presentation/    React + Tailwind: pages, hooks, composition root
+      |
+application/     Use cases + ports (DeckRepository, DeckCsvParser)
+      |
+domain/          Pure TS: Deck, Slide, DeckSettings, Language, invariants
+      ^
+infrastructure/  Implements ports: IndexedDB, PapaParse, Wake Lock
+```
+
+### Dependency Rule
+
+`domain/` has **zero** dependencies on other layers.
+`application/` depends only on `domain/`.
+`infrastructure/` and `presentation/` may depend on `application/` and
+`domain/` (via ports), but **never** on each other.
+
+Tooling-based import enforcement (e.g. ESLint `import/no-restricted-paths` or
+a dedicated bundler rule) will be added in a later task. Until then the rule is
+enforced by convention and documented here; cross-layer imports in the wrong
+direction will be flagged in code review.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start Vite dev server |
+| `pnpm build` | TypeScript check + production build |
+| `pnpm preview` | Preview the production build |
+| `pnpm test` | Run Vitest test suite |
+| `pnpm check` | Biome lint + format check |
+
+## Requirements
+
+Node >= 22 (see `.nvmrc`).

@@ -24,7 +24,7 @@ PapaParse, Vitest + React Testing Library, fake-indexeddb.
 
 | # | Phase | Tasks | Dependencies | Description | Status |
 |---|-------|-------|--------------|-------------|--------|
-| 1 | [Foundation & Deployment](phase-1-foundation/README.md) | 3 | — | Scaffold project, PWA config, GitHub repo + Pages CI/CD | Pending |
+| 1 | [Foundation & Deployment](phase-1-foundation/README.md) | 3 | — | Scaffold project, PWA config, GitHub repo + Pages CI/CD | In Progress |
 | 2 | [Domain Layer](phase-2-domain/README.md) | 2 | 1 | Slide, Language, Deck aggregate, DeckSettings, invariants | Pending |
 | 3 | [Application Layer](phase-3-application/README.md) | 2 | 2 | Ports + in-memory fakes, deck management use cases | Pending |
 | 4 | [Infrastructure Layer](phase-4-infrastructure/README.md) | 2 | 3 | PapaParse CSV parser adapter, IndexedDB repository | Pending |
