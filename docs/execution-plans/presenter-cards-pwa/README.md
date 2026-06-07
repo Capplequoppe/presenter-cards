@@ -25,12 +25,12 @@ PapaParse, Vitest + React Testing Library, fake-indexeddb.
 | # | Phase | Tasks | Dependencies | Description | Status |
 |---|-------|-------|--------------|-------------|--------|
 | 1 | [Foundation & Deployment](phase-1-foundation/README.md) | 3 | — | Scaffold project, PWA config, GitHub repo + Pages CI/CD | Complete |
-| 2 | [Domain Layer](phase-2-domain/README.md) | 2 | 1 | Slide, Language, Deck aggregate, DeckSettings, invariants | Pending |
-| 3 | [Application Layer](phase-3-application/README.md) | 2 | 2 | Ports + in-memory fakes, deck management use cases | Pending |
-| 4 | [Infrastructure Layer](phase-4-infrastructure/README.md) | 2 | 3 | PapaParse CSV parser adapter, IndexedDB repository | Pending |
-| 5 | [Deck Menu UI](phase-5-deck-menu/README.md) | 3 | 4 | Composition root, deck list, import flow, deck actions | Pending |
-| 6 | [Presenter Screen](phase-6-presenter/README.md) | 3 | 5 | Slide rendering, gestures, language toggle, font controls, wake lock | Pending |
-| 7 | [Finalization](phase-7-finalization/README.md) | 2 | 6 | Docs, sample deck, end-to-end verification of deployed PWA | Pending |
+| 2 | [Domain Layer](phase-2-domain/README.md) | 2 | 1 | Slide, Language, Deck aggregate, DeckSettings, invariants | Complete |
+| 3 | [Application Layer](phase-3-application/README.md) | 2 | 2 | Ports + in-memory fakes, deck management use cases | Complete |
+| 4 | [Infrastructure Layer](phase-4-infrastructure/README.md) | 2 | 3 | PapaParse CSV parser adapter, IndexedDB repository | Complete |
+| 5 | [Deck Menu UI](phase-5-deck-menu/README.md) | 3 | 4 | Composition root, deck list, import flow, deck actions | Complete |
+| 6 | [Presenter Screen](phase-6-presenter/README.md) | 3 | 5 | Slide rendering, gestures, language toggle, font controls, wake lock | Complete |
+| 7 | [Finalization](phase-7-finalization/README.md) | 2 | 6 | Docs, sample deck, end-to-end verification of deployed PWA | In Progress |
 
 Phases are sequential: each depends on the previous one. Tasks within a phase
 may be parallelizable where noted in the phase README.
