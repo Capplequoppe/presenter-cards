@@ -30,7 +30,7 @@ PapaParse, Vitest + React Testing Library, fake-indexeddb.
 | 4 | [Infrastructure Layer](phase-4-infrastructure/README.md) | 2 | 3 | PapaParse CSV parser adapter, IndexedDB repository | Complete |
 | 5 | [Deck Menu UI](phase-5-deck-menu/README.md) | 3 | 4 | Composition root, deck list, import flow, deck actions | Complete |
 | 6 | [Presenter Screen](phase-6-presenter/README.md) | 3 | 5 | Slide rendering, gestures, language toggle, font controls, wake lock | Complete |
-| 7 | [Finalization](phase-7-finalization/README.md) | 2 | 6 | Docs, sample deck, end-to-end verification of deployed PWA | In Progress |
+| 7 | [Finalization](phase-7-finalization/README.md) | 2 | 6 | Docs, sample deck, end-to-end verification of deployed PWA | Complete |
 
 Phases are sequential: each depends on the previous one. Tasks within a phase
 may be parallelizable where noted in the phase README.
@@ -43,4 +43,9 @@ may be parallelizable where noted in the phase README.
 - TDD: tests written before implementation
 - Phase review by subagents documented in the phase README under `## Review`
 
-## Status: Pending
+## Status: Complete
+
+All seven phases are complete. The app is live at
+<https://capplequoppe.github.io/presenter-cards/> and verified end to end
+against the design spec (task 7.2); the only remaining items are the
+documented manual on-device checks in the task 7.2 file.
