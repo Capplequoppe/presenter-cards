@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { createRealUseCases, UseCasesProvider } from "./composition-root";
 import { DeckMenuPage } from "./pages/DeckMenuPage";
-import { PresenterPlaceholder } from "./pages/PresenterPlaceholder";
+import { PresenterPage } from "./pages/presenter/PresenterPage";
 import { useHashRoute } from "./routing";
 
 /**
@@ -20,7 +20,7 @@ export function App() {
 		<div className="min-h-screen bg-[#121212] text-gray-100">
 			<UseCasesProvider useCases={useCases}>
 				{route.kind === "presenter" ? (
-					<PresenterPlaceholder />
+					<PresenterPage deckId={route.deckId} />
 				) : (
 					<DeckMenuPage />
 				)}

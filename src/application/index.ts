@@ -3,6 +3,7 @@ export { CsvParseError, CsvParseErrorKind } from "./ports/deck-csv-parser";
 export type { DeckRepository } from "./ports/deck-repository";
 export { DeckNotFoundError } from "./ports/deck-repository";
 export { DeleteDeck } from "./use-cases/delete-deck";
+export { GetDeck } from "./use-cases/get-deck";
 export { ImportDeck } from "./use-cases/import-deck";
 export { ListDecks } from "./use-cases/list-decks";
 export { ReimportDeck } from "./use-cases/reimport-deck";

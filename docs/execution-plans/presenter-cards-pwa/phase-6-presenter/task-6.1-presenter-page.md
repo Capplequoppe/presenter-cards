@@ -43,4 +43,50 @@ end to end on the live URL.
 Layout variants are renderings of domain state (`DeckSettings.layout`) —
 presentation switches on domain values, no business rules in components.
 
-## Status: Pending
+## Architectural Decision: GetDeck use case
+
+The original use-case list (ImportDeck, ListDecks, RenameDeck, ReimportDeck,
+DeleteDeck, UpdateDeckSettings) did not include a GetDeck use case. The
+presenter route must load a single deck by id from the URL hash. Two options
+were considered:
+
+1. **Reuse ListDecks, filter in the presentation layer** — couples the
+   presenter to a list concern; all decks are loaded even though only one is
+   needed; violates SRP.
+
+2. **Add a dedicated GetDeck use case** (chosen) — thin pass-through to
+   `repository.findById`; keeps the intent explicit; makes the repository
+   dependency testable in isolation; consistent with all other use cases in the
+   application layer.
+
+GetDeck was therefore added to `src/application/use-cases/get-deck.ts` and
+wired into the composition root alongside the other use cases.
+
+## Status: Complete
+
+Implemented:
+
+- `src/application/use-cases/get-deck.ts` — new GetDeck use case
+  (`repository.findById` pass-through); exported from application index.
+- `src/application/use-cases/get-deck.test.ts` — 2 tests (found/not-found).
+- `src/presentation/pages/presenter/use-presenter.ts` — `usePresenter` hook:
+  bounded navigation (no wrap-around), language defaulting to 'en', language
+  reset on slide change, exposes `goNext`/`goPrevious`/`toggleLanguage` for
+  task 6.2 gesture wiring.
+- `src/presentation/pages/presenter/use-presenter.test.ts` — 11 tests.
+- `src/presentation/pages/presenter/PresenterPage.tsx` — replaces
+  PresenterPlaceholder; loads deck by id, redirects to menu on unknown id,
+  black fullscreen layout, slide text large + centered with fontScale applied,
+  layout variants (text-only / title-text / full), position indicator top-right,
+  language indicator top-center (hidden on EN-only slides), ✕ exit top-left.
+  Includes sr-only navigation buttons (Previous/Next) for test and keyboard
+  access; gesture handling deferred to task 6.2.
+- `src/presentation/pages/presenter/PresenterPage.test.tsx` — 11 tests covering
+  all acceptance criteria.
+- Updated composition root (`use-cases-context.tsx`, `real-use-cases.ts`,
+  `render-with-use-cases.tsx`) to include GetDeck.
+- Updated `App.tsx` to render `PresenterPage` (with `deckId` prop) instead of
+  `PresenterPlaceholder`; updated `App.test.tsx`.
+
+Test counts: 213 total (23 test files), all passing.
+`pnpm check` (Biome) passes. `pnpm build` succeeds.
