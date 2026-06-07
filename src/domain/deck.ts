@@ -39,7 +39,7 @@ export function createDeck(props: CreateDeckProps): Deck {
 		name: props.name,
 		slides: props.slides,
 		importedAt: props.importedAt,
-		settings: createDefaultDeckSettings([...props.slides]),
+		settings: createDefaultDeckSettings(props.slides),
 	};
 }
 

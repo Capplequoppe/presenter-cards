@@ -41,6 +41,19 @@ describe("inferLayout", () => {
 		expect(inferLayout(slides)).toBe("full");
 	});
 
+	it("ignores blank metadata cells (empty CSV cells must not force full)", () => {
+		const slides = [
+			createSlide({ textEn: "Hello", notes: "", speaker: "   " }),
+			createSlide({ textEn: "World", notes: "" }),
+		];
+		expect(inferLayout(slides)).toBe("text-only");
+	});
+
+	it("ignores blank titles (empty CSV cells must not force title-text)", () => {
+		const slides = [createSlide({ title: "  ", textEn: "Hello" })];
+		expect(inferLayout(slides)).toBe("text-only");
+	});
+
 	it("full takes priority over title-text", () => {
 		const slides = [
 			createSlide({ title: "Opening", textEn: "Hello" }),
@@ -94,6 +107,26 @@ describe("updateFontScale", () => {
 	it("steps by 0.1 — 1.0 + 0.1 = 1.1", () => {
 		const settings = createDefaultDeckSettings([createSlide({ textEn: "Hi" })]);
 		const updated = updateFontScale(settings, 1.1);
-		expect(updated.fontScale).toBeCloseTo(1.1);
+		expect(updated.fontScale).toBe(1.1);
+	});
+
+	it("snaps floating-point drift to the nearest 0.1 step", () => {
+		const settings = createDefaultDeckSettings([createSlide({ textEn: "Hi" })]);
+		const updated = updateFontScale(settings, 1.1 + 0.1);
+		expect(updated.fontScale).toBe(1.2);
+	});
+
+	it("snaps off-step values to the nearest 0.1 step", () => {
+		const settings = createDefaultDeckSettings([createSlide({ textEn: "Hi" })]);
+		expect(updateFontScale(settings, 1.234).fontScale).toBe(1.2);
+		expect(updateFontScale(settings, 1.16).fontScale).toBe(1.2);
+	});
+
+	it("repeated 0.1 increments stay exactly on step", () => {
+		let settings = createDefaultDeckSettings([createSlide({ textEn: "Hi" })]);
+		for (let i = 0; i < 5; i++) {
+			settings = updateFontScale(settings, settings.fontScale + 0.1);
+		}
+		expect(settings.fontScale).toBe(1.5);
 	});
 });

@@ -55,6 +55,23 @@ describe("createSlide", () => {
 		const slide = createSlide({ textEn: "Hello", textIt: "   " });
 		expect(slide.isBilingual).toBe(false);
 	});
+
+	it("normalizes whitespace-only textIt to absent", () => {
+		const slide = createSlide({ textEn: "Hello", textIt: "   " });
+		expect(slide.textIt).toBeUndefined();
+	});
+
+	it("normalizes blank title, notes, and speaker to absent", () => {
+		const slide = createSlide({
+			title: "",
+			textEn: "Hello",
+			notes: "   ",
+			speaker: "",
+		});
+		expect(slide.title).toBeUndefined();
+		expect(slide.notes).toBeUndefined();
+		expect(slide.speaker).toBeUndefined();
+	});
 });
 
 describe("getSlideText", () => {
