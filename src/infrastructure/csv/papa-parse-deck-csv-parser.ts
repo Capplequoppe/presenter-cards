@@ -70,7 +70,7 @@ export class PapaParseDeckCsvParser {
 		if (rows.length === 0) {
 			throw new CsvParseError(
 				"No slides found. The CSV has a header row but no data rows.",
-				CsvParseErrorKind.MissingHeader,
+				CsvParseErrorKind.EmptyFile,
 			);
 		}
 

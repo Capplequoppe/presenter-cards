@@ -190,6 +190,15 @@ describe("PapaParseDeckCsvParser", () => {
 			);
 		});
 
+		it("throws EmptyFile kind for a header-only file (a header is present, so MissingHeader would be wrong)", async () => {
+			const csv = "text_en";
+
+			await expect(parser.parse(csv, "deck")).rejects.toSatisfy(
+				(e: unknown) =>
+					e instanceof CsvParseError && e.kind === CsvParseErrorKind.EmptyFile,
+			);
+		});
+
 		it("error message mentions no slides for header-only file", async () => {
 			const csv = "text_en";
 
