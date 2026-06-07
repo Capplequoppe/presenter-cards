@@ -33,4 +33,13 @@ source of truth, re-import to update).
 UI delegates to `RenameDeck`/`ReimportDeck`/`DeleteDeck`; replacement
 semantics (keep id and settings) live in the aggregate, not the component.
 
-## Status: Pending
+## Status: Complete
+
+Implemented DeckActionsMenu component (src/presentation/pages/deck-menu/DeckActionsMenu.tsx) with:
+- ⋮ button per row triggering a dropdown with Rename, Re-import, Delete
+- Rename: uses window.prompt pre-filled with current name; empty input rejected with inline error message; success updates list immediately
+- Re-import: file picker via hidden input; valid CSV replaces slides (count+date update) while name and settings preserved; parse failure shows error, deck untouched
+- Delete: window.confirm naming the deck; confirm removes row; cancel = no-op
+- All action failures (StorageError, CsvParseError) surfaced as dismissible ErrorBanner via DeckMenuPage's onError callback
+
+10 component tests covering all action paths (rename happy/cancel/empty/storage, re-import success/parse-error/storage-error, delete confirm/cancel/storage-error). All 183 tests pass.

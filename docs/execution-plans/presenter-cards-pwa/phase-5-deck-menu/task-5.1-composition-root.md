@@ -37,4 +37,12 @@ presenter screen (Phase 6) mounts on.
 Dependency Inversion completed at the outermost layer: exactly one module
 knows concrete types. Presentation depends on use-case interfaces only.
 
-## Status: Pending
+## Status: Complete
+
+Implemented composition root with `UseCasesContext` (context + `useUseCases` hook), `createRealUseCases` (only place that instantiates IndexedDbDeckRepository and PapaParseDeckCsvParser), and `renderWithUseCases` test helper (fake-backed via FakeDeckRepository + FakeDeckCsvParser).
+
+Hash router implemented in `src/presentation/routing/use-hash-route.ts` (hash-based, GitHub Pages safe). Two routes: `#/deck/:id` → PresenterPlaceholder, default → DeckMenuPage. Unknown routes fall back to deck menu.
+
+App shell in `App.tsx` applies `bg-[#121212] text-gray-100` dark theme globally.
+
+Tests: 3 routing tests, 2 composition-root tests. All 165 tests pass. `pnpm check` clean. `pnpm build` succeeds.
