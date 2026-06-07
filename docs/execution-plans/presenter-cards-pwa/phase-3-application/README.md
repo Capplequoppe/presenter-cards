@@ -8,7 +8,7 @@ management use cases against the ports.
 
 | # | Task | Description | Status |
 |---|------|-------------|--------|
-| 3.1 | [Ports & In-Memory Fakes](task-3.1-ports-and-fakes.md) | DeckRepository + DeckCsvParser interfaces, test fakes | Pending |
+| 3.1 | [Ports & In-Memory Fakes](task-3.1-ports-and-fakes.md) | DeckRepository + DeckCsvParser interfaces, test fakes | Complete |
 | 3.2 | [Deck Management Use Cases](task-3.2-deck-use-cases.md) | ImportDeck, ListDecks, RenameDeck, ReimportDeck, DeleteDeck, UpdateDeckSettings | Pending |
 
 3.2 depends on 3.1.
