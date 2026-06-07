@@ -20,3 +20,14 @@ live URL — manifest, service worker, offline reload, import → present →
 rename → re-import → delete lifecycle, gestures, language toggle, font-scale
 persistence). No functional defects; two cosmetic observations and a manual
 on-device checklist are documented in the task file.
+
+## Review
+
+Phase 7 produced no production code (docs, sample deck, icons, verification),
+and task 7.2 itself was a verification task, so this phase was reviewed as
+part of the whole-plan final regression review instead of a standalone phase
+review. See `## Final Review` in the
+[execution plan README](../README.md): both phase 7 tasks' acceptance
+criteria were confirmed (README + sample deck + parser round-trip test in
+`src/infrastructure/csv/sample-deck-csv.test.ts`; 25/25 live checks), and all
+quality gates pass on the final tree.
