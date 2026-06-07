@@ -1,9 +1,9 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeDeckRepository } from "../../../application/testing";
 import { GetDeck } from "../../../application/use-cases/get-deck";
-import { createDeck, createSlide } from "../../../domain";
+import { createDeck, createSlide, type Deck } from "../../../domain";
 import { renderWithUseCases } from "../../composition-root/render-with-use-cases";
 import { PresenterPage } from "./PresenterPage";
 
@@ -52,6 +52,50 @@ const fullDeck = createDeck({
 	slides: [slideWithFullFields],
 	importedAt: 1000,
 });
+
+const twoBilingualDeck = createDeck({
+	id: "two-bilingual-id",
+	name: "Two Bilingual",
+	slides: [
+		createSlide({ textEn: "First EN", textIt: "First IT" }),
+		createSlide({ textEn: "Second EN", textIt: "Second IT" }),
+	],
+	importedAt: 1000,
+});
+
+/**
+ * Renders the presenter with the given deck, waits for the first slide and
+ * gives the root container a deterministic width so the 20% edge-zone math
+ * is testable in jsdom (offsetWidth is otherwise 0).
+ */
+async function renderLoadedPresenter(
+	deck: Deck,
+	firstSlideText: string,
+): Promise<HTMLElement> {
+	const repo = new FakeDeckRepository();
+	await repo.save(deck);
+	const getDeck = new GetDeck(repo);
+
+	const { container } = renderWithUseCases(<PresenterPage deckId={deck.id} />, {
+		useCases: { getDeck },
+	});
+
+	await screen.findByText(firstSlideText);
+	const root = container.firstChild as HTMLElement;
+	Object.defineProperty(root, "offsetWidth", { value: 1000 });
+	return root;
+}
+
+/** Simulates a pointer press at startX released at endX (tap when equal). */
+function pointerGesture(root: HTMLElement, startX: number, endX: number): void {
+	fireEvent.pointerDown(root, { clientX: startX, clientY: 200 });
+	fireEvent.pointerMove(root, { clientX: endX, clientY: 200 });
+	fireEvent.pointerUp(root, { clientX: endX, clientY: 200 });
+}
+
+function tap(root: HTMLElement, clientX: number): void {
+	pointerGesture(root, clientX, clientX);
+}
 
 describe("PresenterPage", () => {
 	beforeEach(() => {
@@ -260,6 +304,86 @@ describe("PresenterPage", () => {
 			expect(screen.queryByTestId("slide-notes")).not.toBeInTheDocument();
 			expect(screen.queryByTestId("slide-duration")).not.toBeInTheDocument();
 			expect(screen.queryByTestId("slide-speaker")).not.toBeInTheDocument();
+		});
+	});
+
+	describe("gesture navigation (component level)", () => {
+		it("swipe left anywhere advances; swipe right goes back", async () => {
+			const root = await renderLoadedPresenter(
+				textOnlyDeck,
+				"Welcome everyone!",
+			);
+
+			pointerGesture(root, 500, 400); // 100px left swipe
+			expect(screen.getByText("Second")).toBeInTheDocument();
+			expect(screen.getByText("2 / 2")).toBeInTheDocument();
+
+			pointerGesture(root, 400, 500); // 100px right swipe
+			expect(screen.getByText("Welcome everyone!")).toBeInTheDocument();
+			expect(screen.getByText("1 / 2")).toBeInTheDocument();
+		});
+
+		it("right-edge tap advances; left-edge tap goes back; indicator updates", async () => {
+			const root = await renderLoadedPresenter(
+				textOnlyDeck,
+				"Welcome everyone!",
+			);
+
+			tap(root, 900); // right 20% zone of 1000px
+			expect(screen.getByText("2 / 2")).toBeInTheDocument();
+
+			tap(root, 100); // left 20% zone
+			expect(screen.getByText("1 / 2")).toBeInTheDocument();
+		});
+
+		it("center tap toggles EN ⇄ IT on a bilingual slide", async () => {
+			const root = await renderLoadedPresenter(twoBilingualDeck, "First EN");
+
+			tap(root, 500); // center zone
+			expect(screen.getByText("First IT")).toBeInTheDocument();
+			expect(screen.getByTestId("language-indicator")).toHaveTextContent("it");
+
+			tap(root, 500);
+			expect(screen.getByText("First EN")).toBeInTheDocument();
+			expect(screen.getByTestId("language-indicator")).toHaveTextContent("en");
+		});
+
+		it("center tap on an EN-only slide leaves the text unchanged", async () => {
+			const root = await renderLoadedPresenter(
+				textOnlyDeck,
+				"Welcome everyone!",
+			);
+
+			tap(root, 500);
+			expect(screen.getByText("Welcome everyone!")).toBeInTheDocument();
+			expect(
+				screen.queryByTestId("language-indicator"),
+			).not.toBeInTheDocument();
+		});
+
+		it("does not wrap around at either end of the deck", async () => {
+			const root = await renderLoadedPresenter(
+				textOnlyDeck,
+				"Welcome everyone!",
+			);
+
+			pointerGesture(root, 400, 500); // swipe right on first slide
+			expect(screen.getByText("1 / 2")).toBeInTheDocument();
+
+			pointerGesture(root, 500, 400); // move to last slide
+			pointerGesture(root, 500, 400); // swipe left on last slide
+			expect(screen.getByText("2 / 2")).toBeInTheDocument();
+		});
+
+		it("resets language to English when navigating after toggling to Italian", async () => {
+			const root = await renderLoadedPresenter(twoBilingualDeck, "First EN");
+
+			tap(root, 500); // toggle to IT
+			expect(screen.getByText("First IT")).toBeInTheDocument();
+
+			pointerGesture(root, 500, 400); // next slide
+			expect(screen.getByText("Second EN")).toBeInTheDocument();
+			expect(screen.getByTestId("language-indicator")).toHaveTextContent("en");
 		});
 	});
 });
