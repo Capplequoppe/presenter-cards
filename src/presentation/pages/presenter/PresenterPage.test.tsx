@@ -219,6 +219,34 @@ describe("PresenterPage", () => {
 		});
 	});
 
+	describe("multi-paragraph slide text", () => {
+		it("preserves line breaks in verbatim scripts (whitespace-pre-line)", async () => {
+			const multiLineDeck = createDeck({
+				id: "multi-line-id",
+				name: "Multi Line",
+				slides: [
+					createSlide({
+						textEn: "Good evening everyone.\n\nBefore we continue, a game.",
+					}),
+				],
+				importedAt: 1000,
+			});
+			const repo = new FakeDeckRepository();
+			await repo.save(multiLineDeck);
+			const getDeck = new GetDeck(repo);
+
+			renderWithUseCases(<PresenterPage deckId="multi-line-id" />, {
+				useCases: { getDeck },
+			});
+
+			const paragraph = await screen.findByText(/Good evening everyone\./);
+			expect(paragraph).toHaveClass("whitespace-pre-line");
+			expect(paragraph.textContent).toContain(
+				"Good evening everyone.\n\nBefore we continue, a game.",
+			);
+		});
+	});
+
 	describe("layout: text-only", () => {
 		it("shows slide text without title", async () => {
 			const repo = new FakeDeckRepository();

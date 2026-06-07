@@ -152,7 +152,11 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 				) : null}
 
 				{/* Main slide text */}
-				<p className="font-semibold leading-tight" style={fontScaleStyle}>
+				{/* whitespace-pre-line preserves the paragraph breaks of verbatim scripts */}
+				<p
+					className="font-semibold leading-tight whitespace-pre-line"
+					style={fontScaleStyle}
+				>
 					{slideText}
 				</p>
 
