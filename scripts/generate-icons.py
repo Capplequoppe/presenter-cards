@@ -12,18 +12,25 @@ OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "public", "icons")
 BACKGROUND_COLOR = (18, 18, 18)   # near-black matching the shell dark theme
 GLYPH_COLOR = (220, 220, 220)     # near-white glyph
 
+FONT_PATHS = (
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+)
 
-def draw_glyph(draw: ImageDraw.ImageDraw, size: int) -> None:
-    """Draw a simple 'PC' monogram centred on the icon."""
-    font_size = max(int(size * 0.4), 12)
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", font_size)
-    except OSError:
+
+def load_font(font_size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """Load the first available bold font, falling back to Pillow's default."""
+    for path in FONT_PATHS:
         try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+            return ImageFont.truetype(path, font_size)
         except OSError:
-            font = ImageFont.load_default()
+            continue
+    return ImageFont.load_default()
 
+
+def draw_glyph(draw: ImageDraw.ImageDraw, size: int, scale: float) -> None:
+    """Draw a 'PC' monogram centred on the icon at the given glyph scale."""
+    font = load_font(max(int(size * scale), 12))
     text = "PC"
     bbox = draw.textbbox((0, 0), text, font=font)
     text_w = bbox[2] - bbox[0]
@@ -36,34 +43,12 @@ def draw_glyph(draw: ImageDraw.ImageDraw, size: int) -> None:
 def generate_icon(size: int, filename: str, maskable: bool = False) -> None:
     """Generate a square icon PNG of the given size.
 
-    For maskable icons, padding of ~10% is applied so the glyph stays
-    within the safe zone of any squircle mask.
+    Maskable icons use a smaller glyph (35% vs 40% of the icon size) so it
+    stays within the safe zone of any squircle mask.
     """
     img = Image.new("RGBA", (size, size), BACKGROUND_COLOR + (255,))
     draw = ImageDraw.Draw(img)
-
-    if maskable:
-        # Draw a rounded-rect background to hint at shape, glyph stays inside safe zone
-        padding = int(size * 0.1)
-        draw_glyph_size_override = int(size * 0.35)
-        font_size = max(draw_glyph_size_override, 12)
-        try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", font_size)
-        except OSError:
-            try:
-                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
-            except OSError:
-                font = ImageFont.load_default()
-
-        text = "PC"
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_w = bbox[2] - bbox[0]
-        text_h = bbox[3] - bbox[1]
-        x = (size - text_w) / 2 - bbox[0]
-        y = (size - text_h) / 2 - bbox[1]
-        draw.text((x, y), text, fill=GLYPH_COLOR, font=font)
-    else:
-        draw_glyph(draw, size)
+    draw_glyph(draw, size, scale=0.35 if maskable else 0.4)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     path = os.path.join(OUTPUT_DIR, filename)
