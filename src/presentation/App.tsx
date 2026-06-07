@@ -1,5 +1,10 @@
 import { useMemo } from "react";
-import { createRealUseCases, UseCasesProvider } from "./composition-root";
+import { BrowserWakeLock } from "../infrastructure/wake-lock";
+import {
+	createRealUseCases,
+	ServicesProvider,
+	UseCasesProvider,
+} from "./composition-root";
 import { DeckMenuPage } from "./pages/DeckMenuPage";
 import { PresenterPage } from "./pages/presenter/PresenterPage";
 import { useHashRoute } from "./routing";
@@ -14,16 +19,19 @@ import { useHashRoute } from "./routing";
  */
 export function App() {
 	const useCases = useMemo(() => createRealUseCases(), []);
+	const services = useMemo(() => ({ wakeLock: new BrowserWakeLock() }), []);
 	const route = useHashRoute();
 
 	return (
 		<div className="min-h-screen bg-[#121212] text-gray-100">
 			<UseCasesProvider useCases={useCases}>
-				{route.kind === "presenter" ? (
-					<PresenterPage deckId={route.deckId} />
-				) : (
-					<DeckMenuPage />
-				)}
+				<ServicesProvider services={services}>
+					{route.kind === "presenter" ? (
+						<PresenterPage deckId={route.deckId} />
+					) : (
+						<DeckMenuPage />
+					)}
+				</ServicesProvider>
 			</UseCasesProvider>
 		</div>
 	);

@@ -35,4 +35,29 @@ fontScale bounds enforced by the domain, UI merely renders; Wake Lock is a
 browser API behind an infrastructure interface (DIP), trivially faked in
 tests.
 
-## Status: Pending
+## Status: Complete
+
+### Summary
+
+**Part A — Wake Lock infrastructure:**
+- `src/infrastructure/wake-lock/screen-wake-lock.ts` — `ScreenWakeLock` interface with `acquire()`/`release()`
+- `src/infrastructure/wake-lock/browser-wake-lock.ts` — `BrowserWakeLock` using `navigator.wakeLock`; degrades silently when API absent
+- `src/infrastructure/wake-lock/fake-wake-lock.ts` — `FakeWakeLock` with observable `isAcquired`, `acquireCount`, `releaseCount`
+- `src/infrastructure/wake-lock/index.ts` — barrel export
+- `src/infrastructure/index.ts` — re-exports `ScreenWakeLock`, `BrowserWakeLock`, `FakeWakeLock`
+- `src/presentation/composition-root/services-context.tsx` — `Services` interface + `ServicesProvider` + `useServices` hook (parallel to `UseCasesContext`)
+- `src/presentation/composition-root/index.ts` — exports `Services`, `ServicesProvider`, `useServices`
+- `src/presentation/composition-root/render-with-use-cases.tsx` — extended to provide `ServicesProvider` with `FakeWakeLock` in tests
+- `src/presentation/pages/presenter/use-wake-lock.ts` — hook: acquires on mount, releases on unmount, re-acquires on `visibilitychange` to visible
+- `src/presentation/pages/presenter/use-wake-lock.test.ts` — 5 tests covering mount/unmount/visibility/absent-API
+
+**Part B — Font controls:**
+- `src/presentation/pages/presenter/use-fading-visibility.ts` — hook that fades to invisible after 3 s of inactivity; `keepVisible()` resets the timer
+- `src/presentation/pages/presenter/FontControls.tsx` — A−/A+ buttons; adjusts fontScale via `updateFontScale` (domain rule); persists via `UpdateDeckSettings`; fades out; stops event propagation
+- `src/presentation/pages/presenter/FontControls.test.tsx` — 10 tests: A+ 1.0→1.1, bounds disable, no-op at bounds, persistence, fade timeout, fade reset on interaction, no navigation side effect
+- `src/presentation/pages/presenter/PresenterPage.tsx` — minimal additions: imports `FontControls`, `useWakeLock`, `useServices`; lifts `settings` state for immediate font feedback; wires `FontControls` in bottom-right overlay
+- `src/presentation/App.tsx` — provides `ServicesProvider` with `BrowserWakeLock` alongside `UseCasesProvider`
+
+**Deleted:** `src/presentation/pages/PresenterPlaceholder.tsx` — dead file, not imported anywhere
+
+**Quality gates:** 228 tests pass, `pnpm check` clean, `pnpm build` succeeds.
