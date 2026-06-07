@@ -20,6 +20,10 @@ export interface Slide {
 	readonly isBilingual: boolean;
 }
 
+function normalizeOptionalText(value: string | undefined): string | undefined {
+	return value !== undefined && value.trim() !== "" ? value : undefined;
+}
+
 export function createSlide(props: SlideProps, row?: number): Slide {
 	if (props.textEn.trim() === "") {
 		throw new InvalidSlideError(
@@ -28,16 +32,16 @@ export function createSlide(props: SlideProps, row?: number): Slide {
 		);
 	}
 
-	const isBilingual = props.textIt !== undefined && props.textIt.trim() !== "";
+	const textIt = normalizeOptionalText(props.textIt);
 
 	return {
-		title: props.title,
+		title: normalizeOptionalText(props.title),
 		textEn: props.textEn,
-		textIt: props.textIt,
-		notes: props.notes,
+		textIt,
+		notes: normalizeOptionalText(props.notes),
 		durationMinutes: props.durationMinutes,
-		speaker: props.speaker,
-		isBilingual,
+		speaker: normalizeOptionalText(props.speaker),
+		isBilingual: textIt !== undefined,
 	};
 }
 
@@ -46,5 +50,5 @@ export function getSlideText(slide: Slide, language: Language): string | null {
 		return slide.textEn;
 	}
 
-	return slide.isBilingual && slide.textIt !== undefined ? slide.textIt : null;
+	return slide.textIt ?? null;
 }
