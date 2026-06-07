@@ -285,6 +285,58 @@ describe("PapaParseDeckCsvParser", () => {
 		});
 	});
 
+	describe("CRLF line endings (Windows/Excel exports)", () => {
+		it("parses CRLF-delimited rows", async () => {
+			const csv = "text_en,title\r\nHello,World\r\nBye,Now";
+
+			const result = await parser.parse(csv, "deck");
+
+			expect(result.slides).toHaveLength(2);
+			expect(result.slides[0].textEn).toBe("Hello");
+			expect(result.slides[1].textEn).toBe("Bye");
+		});
+
+		it("ignores trailing blank CRLF lines", async () => {
+			const csv = "text_en\r\nHello\r\n\r\n\r\n";
+
+			const result = await parser.parse(csv, "deck");
+
+			expect(result.slides).toHaveLength(1);
+		});
+
+		it("preserves CRLF newlines inside quoted cells verbatim", async () => {
+			const csv = 'text_en\r\n"Line one\r\nLine two"';
+
+			const result = await parser.parse(csv, "deck");
+
+			expect(result.slides).toHaveLength(1);
+			expect(result.slides[0].textEn).toBe("Line one\r\nLine two");
+		});
+	});
+
+	describe("malformed row shapes", () => {
+		it("ignores extra cells beyond the header count instead of failing", async () => {
+			const csv = ["text_en,title", "Hello,World,EXTRA1,EXTRA2"].join("\n");
+
+			const result = await parser.parse(csv, "deck");
+
+			expect(result.slides).toHaveLength(1);
+			expect(result.slides[0].textEn).toBe("Hello");
+			expect(result.slides[0].title).toBe("World");
+		});
+
+		it("uses the first column when the header name is duplicated", async () => {
+			// PapaParse renames the second duplicate to text_en_1, which is
+			// then ignored as an unrecognized column.
+			const csv = ["text_en,text_en", "first,second"].join("\n");
+
+			const result = await parser.parse(csv, "deck");
+
+			expect(result.slides).toHaveLength(1);
+			expect(result.slides[0].textEn).toBe("first");
+		});
+	});
+
 	describe("blank optional fields", () => {
 		it("normalizes blank optional fields to undefined", async () => {
 			const csv = ["title,text_en,text_it,notes,speaker", ",Hello,,,"].join(
