@@ -1,6 +1,7 @@
-export type { CreateDeckProps, Deck } from "./deck";
+export type { CreateDeckProps, Deck, ReconstituteDeckProps } from "./deck";
 export {
 	createDeck,
+	reconstituteDeck,
 	reImportDeck,
 	renameDeck,
 	updateDeckSettings,

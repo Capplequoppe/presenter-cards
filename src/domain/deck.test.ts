@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	createDeck,
+	reconstituteDeck,
 	reImportDeck,
 	renameDeck,
 	updateDeckSettings,
@@ -204,5 +205,119 @@ describe("reImportDeck", () => {
 			importedAt: 1000,
 		});
 		expect(() => reImportDeck(deck, [], 2000)).toThrow(EmptyDeckError);
+	});
+});
+
+describe("reconstituteDeck", () => {
+	it("rebuilds a deck with all fields from persisted primitives", () => {
+		const slides = [slide1, slide2];
+		const settings = { layout: "title-text" as const, fontScale: 1.5 };
+		const deck = reconstituteDeck({
+			id: "deck-99",
+			name: "Persisted Event",
+			settings,
+			slides,
+			importedAt: 5000,
+		});
+		expect(deck.id).toBe("deck-99");
+		expect(deck.name).toBe("Persisted Event");
+		expect(deck.slides).toHaveLength(2);
+		expect(deck.importedAt).toBe(5000);
+		expect(deck.settings.layout).toBe("title-text");
+		expect(deck.settings.fontScale).toBe(1.5);
+	});
+
+	it("preserves user-modified layout without re-inferring from slides", () => {
+		// Slides have notes → inference would yield "full", but stored layout is "text-only"
+		const slideWithMeta = createSlide({ textEn: "Hello", notes: "Smile" });
+		const deck = reconstituteDeck({
+			id: "deck-1",
+			name: "Event",
+			settings: { layout: "text-only", fontScale: 1.0 },
+			slides: [slideWithMeta],
+			importedAt: 1000,
+		});
+		expect(deck.settings.layout).toBe("text-only");
+	});
+
+	it("clamps and snaps fontScale to valid range on reconstitution", () => {
+		const deck = reconstituteDeck({
+			id: "deck-1",
+			name: "Event",
+			settings: { layout: "text-only", fontScale: 9.99 },
+			slides: [slide1],
+			importedAt: 1000,
+		});
+		expect(deck.settings.fontScale).toBe(2.0);
+	});
+
+	it("snaps fontScale to nearest 0.1 step", () => {
+		const deck = reconstituteDeck({
+			id: "deck-1",
+			name: "Event",
+			settings: { layout: "text-only", fontScale: 1.234 },
+			slides: [slide1],
+			importedAt: 1000,
+		});
+		expect(deck.settings.fontScale).toBe(1.2);
+	});
+
+	it("throws InvalidDeckNameError for empty name", () => {
+		expect(() =>
+			reconstituteDeck({
+				id: "deck-1",
+				name: "",
+				settings: { layout: "text-only", fontScale: 1.0 },
+				slides: [slide1],
+				importedAt: 1000,
+			}),
+		).toThrow(InvalidDeckNameError);
+	});
+
+	it("throws InvalidDeckNameError for whitespace-only name", () => {
+		expect(() =>
+			reconstituteDeck({
+				id: "deck-1",
+				name: "   ",
+				settings: { layout: "text-only", fontScale: 1.0 },
+				slides: [slide1],
+				importedAt: 1000,
+			}),
+		).toThrow(InvalidDeckNameError);
+	});
+
+	it("throws EmptyDeckError when slides array is empty", () => {
+		expect(() =>
+			reconstituteDeck({
+				id: "deck-1",
+				name: "Event",
+				settings: { layout: "text-only", fontScale: 1.0 },
+				slides: [],
+				importedAt: 1000,
+			}),
+		).toThrow(EmptyDeckError);
+	});
+
+	it("allows domain operations on the reconstituted deck", () => {
+		const deck = reconstituteDeck({
+			id: "deck-1",
+			name: "Event",
+			settings: { layout: "text-only", fontScale: 1.0 },
+			slides: [slide1],
+			importedAt: 1000,
+		});
+		const renamed = renameDeck(deck, "New Event");
+		expect(renamed.name).toBe("New Event");
+	});
+
+	it("rejects empty rename on a reconstituted deck (invariant enforced)", () => {
+		const deck = reconstituteDeck({
+			id: "deck-1",
+			name: "Event",
+			settings: { layout: "text-only", fontScale: 1.0 },
+			slides: [slide1],
+			importedAt: 1000,
+		});
+		expect(() => renameDeck(deck, "")).toThrow(InvalidDeckNameError);
 	});
 });
