@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DeckNotFoundError } from "../../../application/ports/deck-repository";
 import type { Deck } from "../../../domain";
 import { getSlideText } from "../../../domain";
 import { useUseCases } from "../../composition-root";
 import { navigateToMenu } from "../../routing";
+import { useGestures } from "./use-gestures";
 import { usePresenter } from "./use-presenter";
 
 interface PresenterPageProps {
@@ -51,8 +52,44 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 	const layout = deck.settings.layout;
 	const fontScaleStyle = { fontSize: `${deck.settings.fontScale * 3}rem` };
 
+	const containerRef = useRef<HTMLDivElement>(null);
+	const gestures = useGestures({
+		goNext: state.goNext,
+		goPrevious: state.goPrevious,
+		toggleLanguage: state.toggleLanguage,
+	});
+
+	const handlePointerDown = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			if (containerRef.current !== null) {
+				gestures.onPointerDown(e.nativeEvent, containerRef.current);
+			}
+		},
+		[gestures],
+	);
+
+	const handlePointerMove = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			gestures.onPointerMove(e.nativeEvent);
+		},
+		[gestures],
+	);
+
+	const handlePointerUp = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			gestures.onPointerUp(e.nativeEvent);
+		},
+		[gestures],
+	);
+
 	return (
-		<div className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
+		<div
+			ref={containerRef}
+			className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden touch-none"
+			onPointerDown={handlePointerDown}
+			onPointerMove={handlePointerMove}
+			onPointerUp={handlePointerUp}
+		>
 			{/* Top chrome */}
 			<div className="relative flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
 				{/* Exit button — top-left */}

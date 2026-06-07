@@ -43,4 +43,18 @@ Gesture interpretation (pixels → intents like next/prev/toggle) is separated
 from presenter state transitions, each unit testable alone; toggle rules rest
 on the domain's `Language`/bilingual logic from 2.1.
 
-## Status: Pending
+## Status: Complete
+
+Implemented `use-gestures.ts` — a standalone hook that translates PointerEvents
+into `goNext / goPrevious / toggleLanguage` intents using a 40px horizontal
+threshold to distinguish swipes from taps, and a 20% edge-zone ratio for left /
+right / center tap zones. Events targeting interactive elements (button, a,
+input, select, textarea) are ignored. `preventDefault` is called on pointerdown
+to suppress scroll/zoom.
+
+Wired into `PresenterPage.tsx` with a minimal diff: one import line, one hook
+call, three `useCallback`-wrapped handler props on the root `<div>`, plus
+`touch-none` Tailwind class and a `containerRef` to supply the element width.
+
+12 new gesture tests added (225 total). All tests pass, `pnpm check` and
+`pnpm build` succeed.
