@@ -1,4 +1,5 @@
 import { DeleteDeck } from "../../application/use-cases/delete-deck";
+import { GetDeck } from "../../application/use-cases/get-deck";
 import { ImportDeck } from "../../application/use-cases/import-deck";
 import { ListDecks } from "../../application/use-cases/list-decks";
 import { ReimportDeck } from "../../application/use-cases/reimport-deck";
@@ -30,5 +31,6 @@ export function createRealUseCases(): UseCases {
 		reimportDeck: new ReimportDeck(csvParser, repository, clock),
 		deleteDeck: new DeleteDeck(repository),
 		updateDeckSettings: new UpdateDeckSettings(repository),
+		getDeck: new GetDeck(repository),
 	};
 }

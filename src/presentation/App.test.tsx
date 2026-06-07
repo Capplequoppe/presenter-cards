@@ -23,14 +23,16 @@ describe("App shell routing", () => {
 		).toBeInTheDocument();
 	});
 
-	it("renders the presenter placeholder when navigating to a presenter route", () => {
+	it("renders the presenter page when navigating to a presenter route", () => {
 		act(() => {
 			window.location.hash = "/deck/test-id";
 			window.dispatchEvent(new HashChangeEvent("hashchange"));
 		});
 		render(<App />);
+		// PresenterPage renders a black fullscreen container while loading the deck
+		// (unknown id will trigger a redirect, but the container is rendered initially)
 		expect(
-			screen.getByText("Presenter screen — coming in Phase 6"),
+			document.querySelector(".fixed.inset-0.bg-black"),
 		).toBeInTheDocument();
 	});
 });

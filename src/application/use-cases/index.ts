@@ -1,4 +1,5 @@
 export { DeleteDeck } from "./delete-deck";
+export { GetDeck } from "./get-deck";
 export { ImportDeck } from "./import-deck";
 export { ListDecks } from "./list-decks";
 export { ReimportDeck } from "./reimport-deck";

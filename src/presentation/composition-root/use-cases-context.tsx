@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useContext } from "react";
 import type { DeleteDeck } from "../../application/use-cases/delete-deck";
+import type { GetDeck } from "../../application/use-cases/get-deck";
 import type { ImportDeck } from "../../application/use-cases/import-deck";
 import type { ListDecks } from "../../application/use-cases/list-decks";
 import type { ReimportDeck } from "../../application/use-cases/reimport-deck";
@@ -17,6 +18,7 @@ export interface UseCases {
 	readonly reimportDeck: ReimportDeck;
 	readonly deleteDeck: DeleteDeck;
 	readonly updateDeckSettings: UpdateDeckSettings;
+	readonly getDeck: GetDeck;
 }
 
 const UseCasesContext = createContext<UseCases | null>(null);
