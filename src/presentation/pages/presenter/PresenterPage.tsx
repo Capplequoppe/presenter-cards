@@ -4,6 +4,7 @@ import { getSlideText } from "../../../domain";
 import { useServices, useUseCases } from "../../composition-root";
 import { navigateToMenu } from "../../routing";
 import { FontControls } from "./FontControls";
+import { useFadingVisibility } from "./use-fading-visibility";
 import { useGestures } from "./use-gestures";
 import { usePresenter } from "./use-presenter";
 import { useWakeLock } from "./use-wake-lock";
@@ -61,6 +62,12 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 		fontSize: `${Math.round(settings.fontScale * 3 * 10) / 10}rem`,
 	};
 
+	// Font-controls visibility lives here: while faded the controls have
+	// pointer-events-none, so only interactions on the presenter root can
+	// bring them back.
+	const controlsVisibility = useFadingVisibility();
+	const keepControlsVisible = controlsVisibility.keepVisible;
+
 	const containerRef = useRef<HTMLDivElement>(null);
 	const gestures = useGestures({
 		goNext: state.goNext,
@@ -70,11 +77,12 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 
 	const handlePointerDown = useCallback(
 		(e: React.PointerEvent<HTMLDivElement>) => {
+			keepControlsVisible();
 			if (containerRef.current !== null) {
 				gestures.onPointerDown(e.nativeEvent, containerRef.current);
 			}
 		},
-		[gestures],
+		[gestures, keepControlsVisible],
 	);
 
 	const handlePointerMove = useCallback(
@@ -158,6 +166,8 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 					deckId={deck.id}
 					settings={settings}
 					onSettingsChange={setSettings}
+					visible={controlsVisibility.visible}
+					keepVisible={keepControlsVisible}
 				/>
 			</div>
 

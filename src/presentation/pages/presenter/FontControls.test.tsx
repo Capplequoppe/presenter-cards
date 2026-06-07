@@ -1,4 +1,4 @@
-import { act, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeDeckRepository } from "../../../application/testing";
@@ -228,6 +228,33 @@ describe("FontControls", () => {
 			});
 
 			expect(controls.className).toMatch(/opacity-0/);
+		});
+
+		it("controls reappear when the presenter screen is touched after fading out", async () => {
+			const { repo, deck } = makeDeck(1.0);
+			await repo.save(deck);
+			const getDeck = new GetDeck(repo);
+
+			const { container } = renderWithUseCases(
+				<PresenterPage deckId="deck-1" />,
+				{ useCases: { getDeck } },
+			);
+
+			await screen.findByText("Hello world");
+			const controls = screen.getByTestId("font-controls");
+
+			// Let the controls fade out
+			act(() => {
+				vi.advanceTimersByTime(3100);
+			});
+			expect(controls.className).toMatch(/opacity-0/);
+
+			// While faded the wrapper has pointer-events-none, so interaction
+			// lands on the presenter root — it must bring the controls back.
+			const root = container.firstChild as HTMLElement;
+			fireEvent.pointerDown(root, { clientX: 500, clientY: 200 });
+
+			expect(controls.className).toMatch(/opacity-100/);
 		});
 
 		it("interacting with controls resets the fade timer and keeps them visible", async () => {

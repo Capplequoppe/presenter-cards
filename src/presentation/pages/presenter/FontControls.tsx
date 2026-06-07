@@ -2,7 +2,6 @@ import type { MouseEvent } from "react";
 import type { DeckSettings } from "../../../domain";
 import { updateFontScale } from "../../../domain";
 import { useUseCases } from "../../composition-root";
-import { useFadingVisibility } from "./use-fading-visibility";
 
 const FONT_SCALE_MIN = 0.5;
 const FONT_SCALE_MAX = 2.0;
@@ -12,6 +11,13 @@ interface FontControlsProps {
 	readonly deckId: string;
 	readonly settings: DeckSettings;
 	readonly onSettingsChange: (settings: DeckSettings) => void;
+	/**
+	 * Visibility is owned by the presenter (useFadingVisibility): while faded
+	 * the wrapper has pointer-events-none, so only the presenter root can
+	 * observe the interaction that should bring the controls back.
+	 */
+	readonly visible: boolean;
+	readonly keepVisible: () => void;
 }
 
 /**
@@ -26,9 +32,10 @@ export function FontControls({
 	deckId,
 	settings,
 	onSettingsChange,
+	visible,
+	keepVisible,
 }: FontControlsProps) {
 	const { updateDeckSettings } = useUseCases();
-	const { visible, keepVisible } = useFadingVisibility();
 
 	function stopPropagation(e: MouseEvent): void {
 		e.stopPropagation();
