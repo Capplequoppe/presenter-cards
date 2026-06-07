@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSlide } from "../../domain";
+import { createSlide, EmptyDeckError } from "../../domain";
 import { CsvParseError, CsvParseErrorKind } from "../ports/deck-csv-parser";
 import { FakeDeckCsvParser, FakeDeckRepository } from "../testing";
 import { ImportDeck } from "./import-deck";
@@ -84,6 +84,18 @@ describe("ImportDeck", () => {
 
 		const deck = await useCase.execute("raw csv", "deck.csv");
 		expect(deck.settings.layout).toBe("full");
+	});
+
+	it("propagates domain error and does not save anything when parsed data is invalid", async () => {
+		const repo = new FakeDeckRepository();
+		const parser = FakeDeckCsvParser.withSuccess([]);
+		const useCase = makeUseCase(parser, repo);
+
+		await expect(useCase.execute("raw csv", "deck.csv")).rejects.toThrow(
+			EmptyDeckError,
+		);
+		const all = await repo.listAll();
+		expect(all).toHaveLength(0);
 	});
 
 	it("propagates parse error and does not save anything", async () => {
