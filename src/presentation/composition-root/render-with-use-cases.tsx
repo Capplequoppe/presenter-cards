@@ -11,6 +11,8 @@ import { ListDecks } from "../../application/use-cases/list-decks";
 import { ReimportDeck } from "../../application/use-cases/reimport-deck";
 import { RenameDeck } from "../../application/use-cases/rename-deck";
 import { UpdateDeckSettings } from "../../application/use-cases/update-deck-settings";
+import { FakeWakeLock } from "../../infrastructure/wake-lock";
+import { type Services, ServicesProvider } from "./services-context";
 import { type UseCases, UseCasesProvider } from "./use-cases-context";
 
 /**
@@ -33,6 +35,10 @@ export interface RenderWithUseCasesOptions {
 	 * cases are overridden.
 	 */
 	readonly repository?: FakeDeckRepository;
+	/**
+	 * Override infrastructure services. When omitted, a FakeWakeLock is used.
+	 */
+	readonly services?: Partial<Services>;
 }
 
 /**
@@ -41,6 +47,7 @@ export interface RenderWithUseCasesOptions {
 export function createFakeUseCases(options: RenderWithUseCasesOptions = {}): {
 	useCases: UseCases;
 	repository: FakeDeckRepository;
+	services: Services;
 } {
 	const repository = options.repository ?? new FakeDeckRepository();
 	const csvParser = options.csvParser ?? FakeDeckCsvParser.withSuccess([]);
@@ -57,14 +64,19 @@ export function createFakeUseCases(options: RenderWithUseCasesOptions = {}): {
 		getDeck: new GetDeck(repository),
 	};
 
+	const defaultServices: Services = {
+		wakeLock: new FakeWakeLock(),
+	};
+
 	return {
 		useCases: { ...defaults, ...(options.useCases ?? {}) },
 		repository,
+		services: { ...defaultServices, ...(options.services ?? {}) },
 	};
 }
 
 /**
- * Test helper: renders any subtree with fake-backed use cases.
+ * Test helper: renders any subtree with fake-backed use cases and services.
  *
  * Usage:
  *   const { getByText } = renderWithUseCases(<MyComponent />, { repository: myRepo })
@@ -73,6 +85,10 @@ export function renderWithUseCases(
 	ui: ReactElement,
 	options: RenderWithUseCasesOptions = {},
 ) {
-	const { useCases } = createFakeUseCases(options);
-	return render(<UseCasesProvider useCases={useCases}>{ui}</UseCasesProvider>);
+	const { useCases, services } = createFakeUseCases(options);
+	return render(
+		<UseCasesProvider useCases={useCases}>
+			<ServicesProvider services={services}>{ui}</ServicesProvider>
+		</UseCasesProvider>,
+	);
 }

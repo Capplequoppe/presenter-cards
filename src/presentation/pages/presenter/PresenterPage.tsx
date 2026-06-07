@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DeckNotFoundError } from "../../../application/ports/deck-repository";
-import type { Deck } from "../../../domain";
+import type { Deck, DeckSettings } from "../../../domain";
 import { getSlideText } from "../../../domain";
-import { useUseCases } from "../../composition-root";
+import { useServices, useUseCases } from "../../composition-root";
 import { navigateToMenu } from "../../routing";
+import { FontControls } from "./FontControls";
 import { useGestures } from "./use-gestures";
 import { usePresenter } from "./use-presenter";
+import { useWakeLock } from "./use-wake-lock";
 
 interface PresenterPageProps {
 	readonly deckId: string;
@@ -46,11 +48,19 @@ interface LoadedPresenterProps {
 }
 
 function LoadedPresenter({ deck }: LoadedPresenterProps) {
+	const { wakeLock } = useServices();
+	useWakeLock(wakeLock);
+
 	const state = usePresenter(deck);
 	const { currentIndex, totalSlides, currentSlide, language } = state;
 	const slideText = getSlideText(currentSlide, language) ?? currentSlide.textEn;
 	const layout = deck.settings.layout;
-	const fontScaleStyle = { fontSize: `${deck.settings.fontScale * 3}rem` };
+
+	// Local settings state for immediate font scale feedback; persisted via FontControls
+	const [settings, setSettings] = useState<DeckSettings>(deck.settings);
+	const fontScaleStyle = {
+		fontSize: `${Math.round(settings.fontScale * 3 * 10) / 10}rem`,
+	};
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const gestures = useGestures({
@@ -126,7 +136,9 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 					<h2
 						data-testid="slide-title"
 						className="text-gray-300 mb-4"
-						style={{ fontSize: `${deck.settings.fontScale * 1.5}rem` }}
+						style={{
+							fontSize: `${Math.round(settings.fontScale * 1.5 * 10) / 10}rem`,
+						}}
 					>
 						{currentSlide.title}
 					</h2>
@@ -140,6 +152,15 @@ function LoadedPresenter({ deck }: LoadedPresenterProps) {
 				{/* Secondary fields — shown only in full layout */}
 				{layout === "full" ? <SlideMetadata slide={currentSlide} /> : null}
 			</main>
+
+			{/* Font scale controls — fading overlay at bottom */}
+			<div className="absolute bottom-4 right-4">
+				<FontControls
+					deckId={deck.id}
+					settings={settings}
+					onSettingsChange={setSettings}
+				/>
+			</div>
 
 			{/* Hidden navigation buttons for tests and keyboard fallback */}
 			<div className="sr-only">
