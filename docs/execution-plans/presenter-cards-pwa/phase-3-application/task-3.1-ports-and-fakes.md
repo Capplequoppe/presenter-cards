@@ -21,7 +21,13 @@ implementations used by use-case and presentation tests.
 
 ## Architectural Decision
 
-Hand-written fakes over a mocking library: the ports are small, fakes give
+**Failure channel: thrown typed errors (not Result type).**
+
+The domain layer already throws typed errors (`InvalidSlideError`, `EmptyDeckError`, `InvalidDeckNameError`). Consistency across all layers is a strong argument for the same pattern in the application layer. All ports and use cases throw typed Error subclasses on failure; callers use try/catch. This avoids a dual-convention burden and keeps error handling idioms uniform across the entire codebase.
+
+Alternatives considered: a `Result<T, E>` type (functional style). Rejected because: (1) the domain already throws, (2) mixing throw/Result in different layers increases cognitive load, (3) TypeScript does not enforce exhaustive Result handling at the type level unless every caller wraps results.
+
+**Hand-written fakes over a mocking library:** the ports are small, fakes give
 black-box behavioral tests, and no mock framework dependency is needed
 (testing-anti-patterns: test what the code does, not what the mock does).
 
@@ -41,4 +47,6 @@ Dependency Inversion: application owns the interfaces, infrastructure
 implements them. Interface Segregation: two small ports instead of one broad
 "storage service".
 
-## Status: Pending
+## Status: Complete
+
+Implemented `DeckRepository` and `DeckCsvParser` ports in `src/application/ports/`, with `DeckNotFoundError`, `CsvParseError` (carrying `kind: CsvParseErrorKind` and optional `rows`), and `ParsedDeckData`. In-memory fakes `FakeDeckRepository` and `FakeDeckCsvParser` live in `src/application/testing/` (exported cleanly for reuse in later phases). Failure channel: thrown typed errors, consistent with the domain layer. 13 new tests, all passing. `pnpm test`, `pnpm check`, and `pnpm build` all pass.

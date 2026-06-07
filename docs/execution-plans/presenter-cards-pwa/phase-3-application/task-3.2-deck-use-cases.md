@@ -38,4 +38,6 @@ business logic.
 Single Responsibility per use case; orchestration only — invariants stay in
 the domain; clock injection keeps use cases deterministic.
 
-## Status: Pending
+## Status: Complete
+
+Implemented all six use cases in `src/application/use-cases/`: `ImportDeck` (strips file extension for deck name, injected `idGenerator` and `clock`), `ListDecks` (sort descending by `importedAt`), `RenameDeck`, `ReimportDeck` (id + settings preserved, parse failure leaves stored deck unchanged), `DeleteDeck`, `UpdateDeckSettings`. All depend only on the ports and domain — no React, no browser APIs. 25 new tests against in-memory fakes, all passing. `pnpm test`, `pnpm check`, and `pnpm build` all pass.
