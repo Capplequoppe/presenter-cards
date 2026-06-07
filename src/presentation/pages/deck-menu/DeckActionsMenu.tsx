@@ -113,7 +113,7 @@ export function DeckActionsMenu({
 				aria-haspopup="true"
 				aria-expanded={open}
 				onClick={toggleMenu}
-				className="rounded p-1.5 text-gray-400 hover:text-gray-100 hover:bg-gray-800 transition-colors"
+				className="flex min-h-11 min-w-11 items-center justify-center rounded text-gray-400 hover:text-gray-100 hover:bg-gray-800 transition-colors"
 			>
 				⋮
 			</button>
